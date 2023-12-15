@@ -2,7 +2,7 @@ import pathlib
 from datetime import datetime
 from os import path
 from user_input import PathInput
-from utils import extract_date
+from functions.utils import extract_date
 
 path_to_look_at = PathInput()
 print("\nChecking the dates from your data in: ", path_to_look_at)
@@ -30,4 +30,4 @@ min_date_str = min_date.strftime("%Y-%m-%d")
 max_date_str = max_date.strftime("%Y-%m-%d")
 
 # Print the range
-print(f"You have data that goes from: {min_date_str} to: {max_date_str}")
+print(f"\nYou have data that goes from: {min_date_str} to: {max_date_str}")
