@@ -1,8 +1,8 @@
 import pathlib
 from datetime import datetime
 from os import path
-from user_input import PathInput
-from functions.utils import extract_date
+from functions.user_input import PathInput
+from utils import extract_date
 
 path_to_look_at = PathInput()
 print("\nChecking the dates from your data in: ", path_to_look_at)
