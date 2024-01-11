@@ -2,13 +2,13 @@ import pathlib
 from datetime import datetime
 from os import path
 import os
-from functions import PathInput
+from usr_input import PathInput
 from functions import extract_date
 from functions import append_files
-from functions import StartInput
-from functions import StepInput
+from usr_input import StartInput
+from usr_input import StepInput
 from functions import split_data
-from functions import PathOutput
+from usr_input import PathOutput
 from functions import write_splitted_data
 
 path_to_look_at = PathInput()
