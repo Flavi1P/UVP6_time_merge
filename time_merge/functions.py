@@ -1,5 +1,7 @@
 import re
 import os 
+import pandas as pd
+from io import StringIO
 
 def extract_date(text):
     """Extract a date from the data string of the UVP6 data.txt.
@@ -92,3 +94,32 @@ def write_splitted_data(splitted_data, output_folder, time_step, start_datetime)
         with open(file_name, 'w') as file:
             for value in data_list:
                 file.write(f'{value}\n')
+
+def read_acq(uvp6_files):
+    """Read the acquisition parameters in a list of uvp6 data files and returns a dataframe with all the parameters as different columns and the date of each configurations.
+
+    Args:
+        uvp6_files (string): The path of one or several UVP data files
+    Returns:
+        A pandas dataframe.
+    """    
+    acq_header = ["rame", "configuration_name", "pt_mode", "acquisition_frequency", "frames_per_bloc", "blocs_per_pt", "pressure_for_auto_start", "pressure_difference_for_auto_stop",
+               "result_sending", "save_synthetic_data_for_delayed_request", "limit_lpm_detection_size", "save_images", "vignetting_lower_limit_size", "appendices_ratio",
+               "interval_for_measuring_background_noise", "image_nb_for_smoothing", "analog_output_activation", "gain_for_analog_out", "minimum_object_number",
+               "maximal_internal_temperature", "operator_email", "0", "sd_card_mem", "date"]
+    
+    acq_df = pd.DataFrame(columns = acq_header)
+    acq_list = []
+    for input_file_path in uvp6_files:
+        # Open the input file for reading
+        with open(input_file_path, 'r') as input_file:
+        # Read all lines from the input file, skipping the first two rows
+            acq = input_file.readlines()[2]
+        date = extract_date(input_file_path)
+        # Convert the string to a DataFrame
+        temp_df = pd.read_csv(StringIO(acq), header=None, names=acq_header)
+        temp_df["date"] = date
+        acq_list.append(temp_df)
+    acq_df = pd.concat(acq_list, ignore_index = True)
+    return(acq_df)
+
