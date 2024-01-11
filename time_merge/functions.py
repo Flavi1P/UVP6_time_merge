@@ -123,3 +123,10 @@ def read_acq(uvp6_files):
     acq_df = pd.concat(acq_list, ignore_index = True)
     return(acq_df)
 
+def check_acq(acq_data):
+    non_constant_columns = {}
+    for column in acq_data.columns:
+        if column not in ["date", "sd_card_mem"]:
+            if acq_data[column].nunique() > 1:
+                non_constant_columns[column] = acq_data[column].tolist()
+    return non_constant_columns
