@@ -126,7 +126,12 @@ def read_acq(uvp6_files):
 def check_acq(acq_data):
     non_constant_columns = {}
     for column in acq_data.columns:
-        if column not in ["date", "sd_card_mem"]:
+        if column not in ["sd_card_mem"]:
             if acq_data[column].nunique() > 1:
                 non_constant_columns[column] = acq_data[column].tolist()
     return non_constant_columns
+
+def init_folders(acq_df, acq_variable):
+    for var in acq_variable:
+        name_folder = acq_df[var].unique()
+    return(name_folder)
