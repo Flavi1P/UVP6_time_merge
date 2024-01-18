@@ -161,3 +161,4 @@ cython_debug/
 
 #Data to test the Package
 Data_test/
+tests/test_functions.py

@@ -2,6 +2,7 @@ import sys
 sys.path.append('/remote/complex/home/fpetit/UVP6_time_merge')
 from time_merge.functions import read_acq
 from time_merge.functions import check_acq
+from time_merge.functions import init_folders
 import pathlib
 
 
@@ -16,5 +17,8 @@ if result:
     print("Non-constant columns:")
     for column, values in result.items():
         print(f"{column}: {values}")
+        testtest = init_folders(test, column)
+        print(testtest)
 else:
     print("All columns have constant values.")
+
