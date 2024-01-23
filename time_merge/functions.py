@@ -126,12 +126,24 @@ def read_acq(uvp6_files):
 def check_acq(acq_data):
     non_constant_columns = {}
     for column in acq_data.columns:
-        if column not in ["sd_card_mem"]:
+        if column not in ["sd_card_mem", "date"]:
             if acq_data[column].nunique() > 1:
                 non_constant_columns[column] = acq_data[column].tolist()
     return non_constant_columns
 
-def init_folders(acq_df, acq_variable):
-    for var in acq_variable:
-        name_folder = acq_df[var].unique()
-    return(name_folder)
+def init_folders(acq_data, path_input):
+
+    #Remove date and memory, because they are not supposed to be constant obviously
+    acq_data = acq_data.drop(["date", "sd_card_mem"], axis=1)
+    # Get the number of unique rows
+    unique_rows = acq_data.drop_duplicates().shape[0]
+
+    # Create folders
+    folder_prefix = os.path.basename(os.path.normpath(path_input)) + "_"
+
+    for i in range(1, unique_rows + 1):
+        folder_name = f"{folder_prefix}{chr(ord('a') + i - 1)}" 
+        
+        # Check if folder already exists, if not, create it
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
