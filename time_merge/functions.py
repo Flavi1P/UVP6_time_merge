@@ -147,3 +147,16 @@ def init_folders(acq_data, path_input):
         # Check if folder already exists, if not, create it
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
+
+def acq_sort(acq_data, data_paths):
+     for index, row in dataframe.iterrows():
+        datetime_str = row['datetime']  # Assuming you have a column named 'datetime' in your DataFrame
+        datetime_obj = datetime.strptime(datetime_str, "%Y%m%d_%H%M")
+        closest_folder = f"project_{chr(ord('a') + closest_project_index(datetime_obj) - 1)}"
+
+        # Assuming your files are in the current working directory and named "data_YYYYmmdd_HHMM.txt"
+        file_name = f"data_{datetime_str}.txt"
+        source_path = os.path.join(os.getcwd(), file_name)
+        destination_path = os.path.join(folder_prefix, closest_folder, file_name)
+
+        shutil.copy(source_path, destination_path)
