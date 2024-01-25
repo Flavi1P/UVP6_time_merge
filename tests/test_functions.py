@@ -15,11 +15,12 @@ test = read_acq(data_txt_string)
 
 result = check_acq(test)
 testest = init_folders(test, "Data_test/Data")
-print(testest['folder'])
+print(testest.head())
 if result:
     print("Non-constant columns:")
     for column, values in result.items():
         print(f"{column}: {values}")
+    acq_sort(testest, "Data_test/Data")
     
 else:
     print("All columns have constant values.")

@@ -2,6 +2,7 @@ import re
 import os 
 import pandas as pd
 from io import StringIO
+import shutil
 
 def extract_date(text):
     """Extract a date from the data string of the UVP6 data.txt.
@@ -134,14 +135,14 @@ def check_acq(acq_data):
 def init_folders(acq_data, path_input):
 
     #Remove date and memory, because they are not supposed to be constant obviously
-    acq_data = acq_data.drop(["datetime", "sd_card_mem"], axis=1)
+    acq_data_unique = acq_data.drop(["datetime", "sd_card_mem"], axis=1)
     # Create a new column 'unique_identifier' by concatenating values from each row
-    acq_data['unique_identifier'] = acq_data.apply(lambda row: '_'.join(map(str, row)), axis=1)
+    acq_data_unique['unique_identifier'] = acq_data_unique.apply(lambda row: '_'.join(map(str, row)), axis=1)
 
     # Get the number of unique rows
-    unique_rows = acq_data['unique_identifier'].nunique()
+    unique_rows = acq_data_unique['unique_identifier'].nunique()
 
-    identifiers = acq_data['unique_identifier'].unique()
+    identifiers = acq_data_unique['unique_identifier'].unique()
 
     # Create folders
     folder_prefix = path_input + "_"
@@ -153,7 +154,7 @@ def init_folders(acq_data, path_input):
 
         i_identifier = identifiers[i]
         # Filter rows based on the current unique identifier
-        subset = acq_data[acq_data['unique_identifier'] == i_identifier]
+        subset = acq_data_unique[acq_data_unique['unique_identifier'] == i_identifier]
         
         folder_name = f"{folder_prefix}{chr(ord('a') + i)}"
 
@@ -165,7 +166,7 @@ def init_folders(acq_data, path_input):
             os.makedirs(folder_name)
 
     # Drop the 'unique_identifier' column as it is no longer needed
-    acq_data = acq_data.drop('unique_identifier', axis=1)
+    #acq_data = acq_data.drop('unique_identifier', axis=1)
 
     return acq_data
 
@@ -173,16 +174,17 @@ def init_folders(acq_data, path_input):
 def closest_project_index(dt):
     return min(range(1, unique_rows + 1), key=lambda i: abs((i-1) * 3600 - dt.timestamp()))
 
-def acq_sort(acq_data, path_input):
-     folder_prefix = os.path.basename(os.path.normpath(path_input)) + "_"
-     for index, row in acq_data.iterrows():
-        datetime_str = row['datetime']  #
-        datetime_obj = datetime.strptime(datetime_str, "%Y%m%d-%H%M%S")
-        closest_folder = path_input + "_" + {chr(ord('a') + closest_project_index(datetime_obj) - 1)}
+def acq_sort(acq_data_with_folder, path_input):
+     for index, row in acq_data_with_folder.iterrows():
+        datetime_str = row['datetime']
+        closest_folder = row['folder']
 
         # Files should be in the current working directory and named "YYYYmmdd-HHMMSS_data.txt"
         file_name = f"{datetime_str}_data.txt"
-        source_path = os.path.join(os.getcwd(), file_name)
-        destination_path = os.path.join(folder_prefix, closest_folder, file_name)
+        source_path = os.path.join(path_input, datetime_str, file_name)
+        destination_folder = os.path.join(closest_folder, datetime_str)
+        destination_path = os.path.join(destination_folder, file_name)
+        if not os.path.exists(destination_folder):
+            os.makedirs(destination_folder)
 
         shutil.copy(source_path, destination_path)
