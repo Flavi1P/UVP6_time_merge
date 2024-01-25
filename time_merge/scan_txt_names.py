@@ -10,6 +10,10 @@ from usr_input import StepInput
 from functions import split_data
 from usr_input import PathOutput
 from functions import write_splitted_data
+from functions import read_acq
+from functions import check_acq
+from functions import init_folders
+from functions import acq_sort
 
 path_to_look_at = PathInput()
 print("\nChecking the dates from your data in: ", path_to_look_at)
@@ -26,40 +30,72 @@ for i in data_txt_string:
     date_t = extract_date(i)
     date_strings.append(date_t)
 # Convert strings to datetime objects
-date_objects = [datetime.strptime(date_str, "%Y%m%d") for date_str in date_strings]
+date_objects = [datetime.strptime(date_str, "%Y%m%d-%H%M%S") for date_str in date_strings]
 
 # Find the minimum and maximum dates
 min_date = min(date_objects)
 max_date = max(date_objects)
 
 # Convert back to string format
-min_date_str = min_date.strftime("%Y-%m-%d")
-max_date_str = max_date.strftime("%Y-%m-%d")
+min_date_str = min_date.strftime("%Y-%m-%d %H:%M:%S")
+max_date_str = max_date.strftime("%Y-%m-%d %H:%M:%S")
 
 # Print the range
 print(f"\nYou have data that goes from: {min_date_str} to: {max_date_str}")
 
-#Create one file
-my_data = append_files(data_txt_string)
-
-#with open("Data_test/output_test.txt", 'w') as output_file:
-#    # Write the content of the variable to the file
-#    output_file.write(my_data)
-
 #Ask when the user wants to start 
 start_input = StartInput()
-#Ask for the time step
-step_input = StepInput()
+start_input_obj = datetime.strptime(start_input, "%Y%m%d-%H%M%S")
 
-#Split the long data
-splitted_data = split_data(my_data, step_input, start_input)
+print(f"\nChecking the ACQ configuration")
 
-num_time_steps = len(splitted_data)
+acq_df = read_acq(data_txt_string)
+acq_df['datetime_obj'] = acq_df['datetime'].apply(lambda x: datetime.strptime(x, "%Y%m%d-%H%M%S"))
 
-print(f"Total Number of Time Steps: {num_time_steps}")
+acq_df_filtered = acq_df[(acq_df['datetime_obj'] > start_input_obj)]
+acq_df_filtered = acq_df_filtered.drop('datetime_obj', axis = 1)
+result = check_acq(acq_df_filtered)
 
-#Decide the output folder 
-output_folder = PathOutput()
+if result:
+    print("Non-constant columns:")
+    for column, values in result.items():
+        print(f"{column}: {values}")
+    
+else:
+    print("All columns have constant values.")
 
-#Save all data txt in the folder
-write_splitted_data(splitted_data, output_folder, step_input, start_input)
+print(f"\nMoving the files into the right directories (i.e. one directory per ACQ configuration)")
+acq_output = init_folders(acq_df_filtered, path_to_look_at)
+acq_sort(acq_output, path_to_look_at)
+
+new_folder= acq_output['folder'].unique()
+
+for i in new_folder:
+
+    path_tree = pathlib.Path(i)
+    data_txt_list = path_tree.rglob("*.txt")
+    data_txt_string = [str(file_path) for file_path in data_txt_list]
+    #Create one file
+    my_data = append_files(data_txt_string)
+
+    #with open("Data_test/output_test.txt", 'w') as output_file:
+    #    # Write the content of the variable to the file
+    #    output_file.write(my_data)
+
+    
+    #Ask for the time step
+    step_input = StepInput()
+
+    #Split the long data
+    splitted_data = split_data(my_data, step_input, start_input)
+
+    num_time_steps = len(splitted_data)
+
+    print(f"Total Number of Time Steps: {num_time_steps}")
+
+    #Decide the output folder 
+    output_folder = i
+
+    #Save all data txt in the folder
+    write_splitted_data(splitted_data, output_folder, step_input, start_input)
+

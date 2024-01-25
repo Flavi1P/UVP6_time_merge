@@ -92,7 +92,10 @@ def write_splitted_data(splitted_data, output_folder, time_step, start_datetime)
         time_step_datetime = start_datetime + timedelta(hours=time_step_index * step_float)
         
         # Format the datetime as a string for the file name
-        file_name = os.path.join(output_folder, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "merged_data.txt")
+        directory_name = os.path.join(output_folder, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "merged")
+        if not os.path.exists(directory_name):
+            os.makedirs(directory_name)
+        file_name = os.path.join(directory_name, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "merged_data.txt")
         with open(file_name, 'w') as file:
             for value in data_list:
                 file.write(f'{value}\n')
@@ -128,7 +131,7 @@ def read_acq(uvp6_files):
 def check_acq(acq_data):
     non_constant_columns = {}
     for column in acq_data.columns:
-        if column not in ["sd_card_mem"]:
+        if column not in ["sd_card_mem", "datetime"]:
             if acq_data[column].nunique() > 1:
                 non_constant_columns[column] = acq_data[column].tolist()
     return non_constant_columns
@@ -180,10 +183,7 @@ def acq_sort(acq_data_with_folder, path_input):
         datetime_str = row['datetime']
         closest_folder = row['folder']
 
-        # Files should be in the current working directory and named "YYYYmmdd-HHMMSS_data.txt"
-        file_name = f"{datetime_str}_data.txt"
         source_path = os.path.join(path_input, datetime_str)
-
         destination_folder = os.path.join(closest_folder, datetime_str)
 
         if not os.path.exists(destination_folder):
