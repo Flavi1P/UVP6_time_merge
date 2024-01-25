@@ -135,30 +135,50 @@ def init_folders(acq_data, path_input):
 
     #Remove date and memory, because they are not supposed to be constant obviously
     acq_data = acq_data.drop(["datetime", "sd_card_mem"], axis=1)
+    # Create a new column 'unique_identifier' by concatenating values from each row
+    acq_data['unique_identifier'] = acq_data.apply(lambda row: '_'.join(map(str, row)), axis=1)
+
     # Get the number of unique rows
-    unique_rows = acq_data.drop_duplicates().shape[0]
+    unique_rows = acq_data['unique_identifier'].nunique()
+
+    identifiers = acq_data['unique_identifier'].unique()
 
     # Create folders
     folder_prefix = path_input + "_"
 
-    for i in range(1, unique_rows + 1):
-        folder_name = f"{folder_prefix}{chr(ord('a') + i - 1)}" 
+    # Create a new column 'folder' to store the folder information
+    acq_data['folder'] = ''
+
+    for i in range(unique_rows):
+
+        i_identifier = identifiers[i]
+        # Filter rows based on the current unique identifier
+        subset = acq_data[acq_data['unique_identifier'] == i_identifier]
         
+        folder_name = f"{folder_prefix}{chr(ord('a') + i)}"
+
+        # Update the 'folder' column for rows that match the current folder
+        acq_data.loc[acq_data.index.isin(subset.index), 'folder'] = folder_name
+
         # Check if folder already exists, if not, create it
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 
+    # Drop the 'unique_identifier' column as it is no longer needed
+    acq_data = acq_data.drop('unique_identifier', axis=1)
+
+    return acq_data
+
+
 def closest_project_index(dt):
-    # Function to find the index of the closest project folder
-    # You might need to adjust this based on your specific requirements
-    # This example assumes the projects are evenly distributed across time
     return min(range(1, unique_rows + 1), key=lambda i: abs((i-1) * 3600 - dt.timestamp()))
 
-def acq_sort(acq_data, data_paths):
+def acq_sort(acq_data, path_input):
+     folder_prefix = os.path.basename(os.path.normpath(path_input)) + "_"
      for index, row in acq_data.iterrows():
         datetime_str = row['datetime']  #
-        datetime_obj = datetime.strptime(datetime_str, "%Y%m%d_%H%M%S")
-        closest_folder = f"project_{chr(ord('a') + closest_project_index(datetime_obj) - 1)}"
+        datetime_obj = datetime.strptime(datetime_str, "%Y%m%d-%H%M%S")
+        closest_folder = path_input + "_" + {chr(ord('a') + closest_project_index(datetime_obj) - 1)}
 
         # Files should be in the current working directory and named "YYYYmmdd-HHMMSS_data.txt"
         file_name = f"{datetime_str}_data.txt"
