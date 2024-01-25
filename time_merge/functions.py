@@ -12,7 +12,7 @@ def extract_date(text):
     Returns:
         string: Return a string in the format YYYYmmdd
     """    
-    matches = re.findall("[0-9]{8}", text)
+    matches = re.findall("[0-9]{8}-[0-9]{6}", text)
     if matches:
         return matches[-1]
     else:
@@ -106,7 +106,7 @@ def read_acq(uvp6_files):
     acq_header = ["rame", "configuration_name", "pt_mode", "acquisition_frequency", "frames_per_bloc", "blocs_per_pt", "pressure_for_auto_start", "pressure_difference_for_auto_stop",
                "result_sending", "save_synthetic_data_for_delayed_request", "limit_lpm_detection_size", "save_images", "vignetting_lower_limit_size", "appendices_ratio",
                "interval_for_measuring_background_noise", "image_nb_for_smoothing", "analog_output_activation", "gain_for_analog_out", "minimum_object_number",
-               "maximal_internal_temperature", "operator_email", "0", "sd_card_mem", "date"]
+               "maximal_internal_temperature", "operator_email", "0", "sd_card_mem", "datetime"]
     
     acq_df = pd.DataFrame(columns = acq_header)
     acq_list = []
@@ -118,7 +118,7 @@ def read_acq(uvp6_files):
         date = extract_date(input_file_path)
         # Convert the string to a DataFrame
         temp_df = pd.read_csv(StringIO(acq), header=None, names=acq_header)
-        temp_df["date"] = date
+        temp_df["datetime"] = date
         acq_list.append(temp_df)
     acq_df = pd.concat(acq_list, ignore_index = True)
     return(acq_df)
@@ -126,7 +126,7 @@ def read_acq(uvp6_files):
 def check_acq(acq_data):
     non_constant_columns = {}
     for column in acq_data.columns:
-        if column not in ["sd_card_mem", "date"]:
+        if column not in ["sd_card_mem"]:
             if acq_data[column].nunique() > 1:
                 non_constant_columns[column] = acq_data[column].tolist()
     return non_constant_columns
@@ -134,12 +134,12 @@ def check_acq(acq_data):
 def init_folders(acq_data, path_input):
 
     #Remove date and memory, because they are not supposed to be constant obviously
-    acq_data = acq_data.drop(["date", "sd_card_mem"], axis=1)
+    acq_data = acq_data.drop(["datetime", "sd_card_mem"], axis=1)
     # Get the number of unique rows
     unique_rows = acq_data.drop_duplicates().shape[0]
 
     # Create folders
-    folder_prefix = os.path.basename(os.path.normpath(path_input)) + "_"
+    folder_prefix = path_input + "_"
 
     for i in range(1, unique_rows + 1):
         folder_name = f"{folder_prefix}{chr(ord('a') + i - 1)}" 
@@ -148,14 +148,20 @@ def init_folders(acq_data, path_input):
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 
+def closest_project_index(dt):
+    # Function to find the index of the closest project folder
+    # You might need to adjust this based on your specific requirements
+    # This example assumes the projects are evenly distributed across time
+    return min(range(1, unique_rows + 1), key=lambda i: abs((i-1) * 3600 - dt.timestamp()))
+
 def acq_sort(acq_data, data_paths):
-     for index, row in dataframe.iterrows():
-        datetime_str = row['datetime']  # Assuming you have a column named 'datetime' in your DataFrame
-        datetime_obj = datetime.strptime(datetime_str, "%Y%m%d_%H%M")
+     for index, row in acq_data.iterrows():
+        datetime_str = row['datetime']  #
+        datetime_obj = datetime.strptime(datetime_str, "%Y%m%d_%H%M%S")
         closest_folder = f"project_{chr(ord('a') + closest_project_index(datetime_obj) - 1)}"
 
-        # Assuming your files are in the current working directory and named "data_YYYYmmdd_HHMM.txt"
-        file_name = f"data_{datetime_str}.txt"
+        # Files should be in the current working directory and named "YYYYmmdd-HHMMSS_data.txt"
+        file_name = f"{datetime_str}_data.txt"
         source_path = os.path.join(os.getcwd(), file_name)
         destination_path = os.path.join(folder_prefix, closest_folder, file_name)
 
