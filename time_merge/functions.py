@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from io import StringIO
 import shutil
+from distutils.dir_util import copy_tree
 
 def extract_date(text):
     """Extract a date from the data string of the UVP6 data.txt.
@@ -181,10 +182,11 @@ def acq_sort(acq_data_with_folder, path_input):
 
         # Files should be in the current working directory and named "YYYYmmdd-HHMMSS_data.txt"
         file_name = f"{datetime_str}_data.txt"
-        source_path = os.path.join(path_input, datetime_str, file_name)
+        source_path = os.path.join(path_input, datetime_str)
+
         destination_folder = os.path.join(closest_folder, datetime_str)
-        destination_path = os.path.join(destination_folder, file_name)
+
         if not os.path.exists(destination_folder):
             os.makedirs(destination_folder)
 
-        shutil.copy(source_path, destination_path)
+        copy_tree(source_path, destination_folder)
