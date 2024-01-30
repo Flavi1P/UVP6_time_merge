@@ -1,5 +1,6 @@
 import re
 import os 
+import shutil
 import pandas as pd
 import pathlib
 from io import StringIO
@@ -230,9 +231,26 @@ def acq_sort(acq_data_with_folder, path_input):
 
         copy_tree(source_path, destination_folder)
 
-def img_sort(date_time_list, path_to_look_at):
+def vig_select(date_time_list, path_to_look_at):
+    """Return a list of the vignette path that correspond to the data of a data.txt file.
+
+    Args:
+        date_time_list (list): A date time list, in the str format
+        path_to_look_at (string): The project where all the vig are stored
+    """
     path_tree = pathlib.Path(path_to_look_at)
     vig_list = path_tree.rglob("*.vig")
     vig_string = [str(file_path) for file_path in vig_list]
     vig_to_move = [path for path in vig_string if any(datetime in path for datetime in date_time_list)]
     return(vig_to_move)
+
+
+def vig_move(data_txt, project_path):
+    path = pathlib.Path(data_txt)
+    project_to_move_vig = str(path.parent.absolute()) + '/images/'
+    date_time_list = extract_data_dates(data_txt)
+    vig_to_move = vig_select(date_time_list, project_path)
+    for source_path in tqdm(vig_to_move):
+        filename = os.path.basename(source_path)
+        new_path = project_to_move_vig + filename 
+        shutil.copy2(source_path, new_path)
