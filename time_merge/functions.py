@@ -1,9 +1,11 @@
 import re
 import os 
 import pandas as pd
+import pathlib
 from io import StringIO
 from tqdm import tqdm
 from distutils.dir_util import copy_tree
+from datetime import datetime, timedelta
 
 def extract_date(text):
     """Extract a date from the data string of the UVP6 data.txt.
@@ -42,8 +44,6 @@ def append_files(data_paths):
         # Concatenate the lines to the existing data
         my_long_data += ''.join(lines)
     return(my_long_data)
-
-from datetime import datetime, timedelta
 
 def split_data(data, time_step, start_datetime):
     """Split the large data txt (output from append_files function) from the start date time and using the time step provided. 
@@ -138,6 +138,38 @@ def read_acq(uvp6_files):
     acq_df = pd.concat(acq_list, ignore_index = True)
     return(acq_df)
 
+def extract_data_dates(data_txt, skip_lines = 3):
+    """Extract all the datetime of a data txt.
+
+    Args:
+        data_txt (string): Path of your data txt
+        skip_lines (int, optional): _description_. Defaults to 3. The number of lines to skip (hw and acq conf)
+
+    Returns:
+        list: A list of date time string
+    """    
+    #Initiate the date time list
+    datetime_list = []
+
+    with open(data_txt, 'r') as file:
+        for _ in range(skip_lines):
+            # Skip the specified number of lines
+            next(file)
+
+        for line in file:
+            # Ignore empty lines
+            if not line.strip():
+                continue
+
+            # Split the line using ',' as a delimiter
+            line_parts = line.split(',')
+            
+            # Extract the datetime string from the first part
+            datetime_str = line_parts[0]
+            datetime_list.append(datetime_str)
+
+    return datetime_list
+
 def check_acq(acq_data):
     non_constant_columns = {}
     for column in acq_data.columns:
@@ -197,3 +229,10 @@ def acq_sort(acq_data_with_folder, path_input):
             os.makedirs(destination_folder)
 
         copy_tree(source_path, destination_folder)
+
+def img_sort(date_time_list, path_to_look_at):
+    path_tree = pathlib.Path(path_to_look_at)
+    vig_list = path_tree.rglob("*.vig")
+    vig_string = [str(file_path) for file_path in vig_list]
+    vig_to_move = [path for path in vig_string if any(datetime in path for datetime in date_time_list)]
+    return(vig_to_move)
