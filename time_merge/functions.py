@@ -80,7 +80,7 @@ def split_data(data, time_step, start_datetime):
                 time_steps_data[time_step_index] = []
                 for conf in conf_data:
                     time_steps_data[time_step_index].append(conf)
-            time_steps_data[time_step_index].append('\n')
+            time_steps_data[time_step_index].append('')
             time_steps_data[time_step_index].append(line)
     return(time_steps_data)
         
@@ -172,6 +172,14 @@ def extract_data_dates(data_txt, skip_lines = 3):
     return datetime_list
 
 def check_acq(acq_data):
+    """Check in a dataframe of acquisition parameters, which one is not constant.
+
+    Args:
+        acq_data (dataframe): A dataframe of acquisition parameter.
+
+    Returns:
+        list: a list of the non constant columns
+    """    
     non_constant_columns = {}
     for column in acq_data.columns:
         if column not in ["sd_card_mem", "datetime"]:
@@ -180,6 +188,15 @@ def check_acq(acq_data):
     return non_constant_columns
 
 def init_folders(acq_data, path_input):
+    """create a path three organisation that correspond to homogeneous acquisition project.
+
+    Args:
+        acq_data (dataframe): A dataframe of acquisition parameters
+        path_input (string): The project where you whish to create this new organization
+
+    Returns:
+        acq_data: The acq dataframe with new path
+    """    
 
     #Remove date and memory, because they are not supposed to be constant obviously
     acq_data_unique = acq_data.drop(["datetime", "sd_card_mem"], axis=1)
@@ -219,7 +236,13 @@ def init_folders(acq_data, path_input):
 
 
 def acq_sort(acq_data_with_folder, path_input):
-     for index, row in tqdm(acq_data_with_folder.iterrows()):
+    """Copy data txt to a new folder organization
+
+    Args:
+        acq_data_with_folder (dataframe): The acq dataframe with folder column (output from init_folders)
+        path_input (string): The original project
+    """     
+    for index, row in tqdm(acq_data_with_folder.iterrows()):
         datetime_str = row['datetime']
         closest_folder = row['folder']
 
@@ -246,6 +269,12 @@ def vig_select(date_time_list, path_to_look_at):
 
 
 def vig_move(data_txt, project_path):
+    """Copy the vig of a new split.
+
+    Args:
+        data_txt (string): The path of a merged datatxt
+        project_path (string): The path of the original project
+    """    
     path = pathlib.Path(data_txt)
     project_to_move_vig = str(path.parent.absolute()) + '/images/'
     date_time_list = extract_data_dates(data_txt)
