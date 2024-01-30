@@ -250,7 +250,7 @@ def vig_move(data_txt, project_path):
     project_to_move_vig = str(path.parent.absolute()) + '/images/'
     date_time_list = extract_data_dates(data_txt)
     vig_to_move = vig_select(date_time_list, project_path)
-    for source_path in tqdm(vig_to_move):
+    for source_path in vig_to_move:
         filename = os.path.basename(source_path)
         new_path = project_to_move_vig + filename 
         shutil.copy2(source_path, new_path)

@@ -1,6 +1,7 @@
 import pathlib
 from datetime import datetime
 from os import path
+from tqdm import tqdm
 from usr_input import PathInput
 from functions import extract_date
 from functions import append_files
@@ -12,6 +13,7 @@ from functions import read_acq
 from functions import check_acq
 from functions import init_folders
 from functions import acq_sort
+from functions import vig_move
 
 path_to_look_at = PathInput()
 print("\nChecking the dates from your data in: ", path_to_look_at)
@@ -92,3 +94,10 @@ for i in new_folder:
     #Save all data txt in the folder
     write_splitted_data(splitted_data, output_folder, step_input, start_input)
 
+#Now we check all the "merged" folder and copy the vignettes inside
+proj_parent = pathlib.Path(path_to_look_at).parent.absolute()
+merged_data_txt_list = proj_parent.rglob("*merged_data.txt")
+
+print(f"\n Copying vignettes into new folders")
+for datatxt_merged in tqdm(merged_data_txt_list):
+    vig_move(datatxt_merged, path_to_look_at)
