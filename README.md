@@ -4,18 +4,22 @@ Merge different acquisition sequences on a constant time step.
 ## How to use it
 
 Download this repo with git clone.
-Launch time_merge/scan_txt_names.py 
+```
+git clone git@github.com:Flavi1P/UVP6_time_merge.git
+```
+Launch time_merge/format_time_series_project.py.py
+```
+/usr/bin/pyton UVP6_time_merge/time_merge/format_time_series_project.py
+```
 Look at your terminal to give the input needed (input folder, start date time, time step, output folder)
 
 ## What does it do ?
 
+While the time_merge/functions.py can help you formatting your project "by hand" the time_merge/format_time_series_project.py is workflow easy to use that will do it for you. Here is the few step it goes through.
+
 ### Invite the user to specify the project, date range and time step of the split/merge to execute
 
-When you will execute :
-```
-/usr/bin/pyton UVP6_time_merge/time_merge/format_time_series_project.py
-```
-A message will prompt you to provide the path of a UVP project with a time series acquisition. The project should be organise as a standard UVP6 project, with a "raw" folder that includes different data.txt and associated vignettes. 
+When you will execute format_time_series_project.py a message will prompt you to provide the path of a UVP project with a time series acquisition. The project should be organise as a standard UVP6 project, with a "raw" folder that includes different data.txt and associated vignettes. 
 The user will then chose when he wants to start the split/merge operation.
 
 ### Split your project into different project depending on acquisition configuration
