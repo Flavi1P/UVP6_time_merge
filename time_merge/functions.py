@@ -2,7 +2,7 @@ import re
 import os 
 import pandas as pd
 from io import StringIO
-import shutil
+from tqdm import tqdm
 from distutils.dir_util import copy_tree
 
 def extract_date(text):
@@ -28,7 +28,11 @@ def append_files(data_paths):
     
     Returns: A dictionnary with a list of strings per time step.
     """    
+    f = open(data_paths[1], "r")
     my_long_data = ""
+    
+    conf_data = f.readlines()[:3]#Initiate the long file with HW and ACQ conf
+    my_long_data += ''.join(conf_data)
     for input_file_path in data_paths:
         # Open the input file for reading
         with open(input_file_path, 'r') as input_file:
@@ -54,7 +58,8 @@ def split_data(data, time_step, start_datetime):
     # Initialize a dictionary to store data for each time step
     time_steps_data = {}
     start_datetime = datetime.strptime(start_datetime, '%Y%m%d-%H%M%S')
-    lines = data.split('\n')
+    lines = data.split('\n')[3:]
+    conf_data = data.split('\n')[:3]
     for line in lines:
         if line:
             # Extract the date and time from the line
@@ -72,6 +77,9 @@ def split_data(data, time_step, start_datetime):
             # Append the data to the corresponding time step in the dictionary
             if time_step_index not in time_steps_data:
                 time_steps_data[time_step_index] = []
+                for conf in conf_data:
+                    time_steps_data[time_step_index].append(conf)
+            time_steps_data[time_step_index].append('\n')
             time_steps_data[time_step_index].append(line)
     return(time_steps_data)
         
@@ -95,8 +103,10 @@ def write_splitted_data(splitted_data, output_folder, time_step, start_datetime)
         directory_name = os.path.join(output_folder, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "merged")
         if not os.path.exists(directory_name):
             os.makedirs(directory_name)
+            images_folder = os.path.join(directory_name, "images")
+            os.makedirs(images_folder)
         file_name = os.path.join(directory_name, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "merged_data.txt")
-        with open(file_name, 'w') as file:
+        with open(file_name, 'w') as file:  
             for value in data_list:
                 file.write(f'{value}\n')
 
@@ -175,11 +185,8 @@ def init_folders(acq_data, path_input):
     return acq_data
 
 
-def closest_project_index(dt):
-    return min(range(1, unique_rows + 1), key=lambda i: abs((i-1) * 3600 - dt.timestamp()))
-
 def acq_sort(acq_data_with_folder, path_input):
-     for index, row in acq_data_with_folder.iterrows():
+     for index, row in tqdm(acq_data_with_folder.iterrows()):
         datetime_str = row['datetime']
         closest_folder = row['folder']
 

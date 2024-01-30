@@ -1,14 +1,12 @@
 import pathlib
 from datetime import datetime
 from os import path
-import os
 from usr_input import PathInput
 from functions import extract_date
 from functions import append_files
 from usr_input import StartInput
 from usr_input import StepInput
 from functions import split_data
-from usr_input import PathOutput
 from functions import write_splitted_data
 from functions import read_acq
 from functions import check_acq
@@ -78,11 +76,6 @@ for i in new_folder:
     #Create one file
     my_data = append_files(data_txt_string)
 
-    #with open("Data_test/output_test.txt", 'w') as output_file:
-    #    # Write the content of the variable to the file
-    #    output_file.write(my_data)
-
-    
     #Ask for the time step
     step_input = StepInput()
 
