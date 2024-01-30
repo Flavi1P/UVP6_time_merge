@@ -15,7 +15,7 @@ Look at your terminal to give the input needed (input folder, start date time, t
 
 ## What does it do ?
 
-While the time_merge/functions.py can help you formatting your project "by hand" the time_merge/format_time_series_project.py is workflow easy to use that will do it for you. Here is the few step it goes through.
+While the time_merge/functions.py can help you formatting your project "by hand" the time_merge/format_time_series_project.py is a workflow easy to use that will do it for you. Here is the few step it goes through.
 
 ### Invite the user to specify the project, date range and time step of the split/merge to execute
 
