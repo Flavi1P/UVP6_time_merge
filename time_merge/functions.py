@@ -129,8 +129,13 @@ def read_acq(uvp6_files):
     for input_file_path in uvp6_files:
         # Open the input file for reading
         with open(input_file_path, 'r') as input_file:
+            lines = input_file.readlines()
         # Read all lines from the input file, skipping the first two rows
-            acq = input_file.readlines()[2]
+            if len(lines) >= 3:  # Check if there are at least 3 lines in the file
+                acq = [line for line in lines if "ACQ" in line]
+        # Continue with the rest of your code using acq
+            else:
+                next
         date = extract_date(input_file_path)
         # Convert the string to a DataFrame
         temp_df = pd.read_csv(StringIO(acq), header=None, names=acq_header)

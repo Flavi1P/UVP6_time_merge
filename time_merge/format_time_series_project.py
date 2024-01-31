@@ -26,7 +26,7 @@ data_txt_list = path_tree.rglob("*.txt")
 data_txt_string = [str(file_path) for file_path in data_txt_list]
 
 date_strings = list()
-for i in data_txt_string:
+for i in tqdm(data_txt_string):
     date_t = extract_date(i)
     date_strings.append(date_t)
 # Convert strings to datetime objects
