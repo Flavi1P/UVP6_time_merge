@@ -132,7 +132,7 @@ def read_acq(uvp6_files):
             lines = input_file.readlines()
         # Read all lines from the input file, skipping the first two rows
             if len(lines) >= 3:  # Check if there are at least 3 lines in the file
-                acq = [line for line in lines if "ACQ" in line]
+                acq = ''.join([line for line in lines if "ACQ" in line.upper()])
         # Continue with the rest of your code using acq
             else:
                 next

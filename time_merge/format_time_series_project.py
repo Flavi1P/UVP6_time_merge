@@ -59,7 +59,8 @@ result = check_acq(acq_df_filtered)
 if result:
     print("Non-constant columns:")
     for column, values in result.items():
-        print(f"{column}: {values}")
+        unique_values = set(values)
+        print(f"{column}: {unique_values}")
     
 else:
     print("All columns have constant values.")
