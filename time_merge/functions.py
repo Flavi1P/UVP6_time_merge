@@ -101,12 +101,12 @@ def write_splitted_data(splitted_data, output_folder, time_step, start_datetime)
         time_step_datetime = start_datetime + timedelta(hours=time_step_index * step_float)
         
         # Format the datetime as a string for the file name
-        directory_name = os.path.join(output_folder, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "merged")
+        directory_name = os.path.join(output_folder, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "_Merged")
         if not os.path.exists(directory_name):
             os.makedirs(directory_name)
             images_folder = os.path.join(directory_name, "images")
             os.makedirs(images_folder)
-        file_name = os.path.join(directory_name, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "merged_data.txt")
+        file_name = os.path.join(directory_name, time_step_datetime.strftime('%Y%m%d-%H%M%S') + "_Merged_data.txt")
         with open(file_name, 'w') as file:  
             for value in data_list:
                 file.write(f'{value}\n')
