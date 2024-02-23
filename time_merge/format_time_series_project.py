@@ -97,9 +97,12 @@ for i in new_folder:
 
 #Now we check all the "merged" folder and copy the vignettes inside
 proj_parent = pathlib.Path(path_to_look_at).parent.absolute()
-merged_data_txt_list = proj_parent.rglob("*merged_data.txt")
+merged_data_txt_list = proj_parent.rglob("*Merged_data.txt")
 
+path_tree = pathlib.Path(path_to_look_at)
 vig_list = path_tree.rglob("*.vig")
+vig_string = [str(file_path) for file_path in vig_list]
+
 print(f"\n Copying vignettes into new folders")
 for datatxt_merged in tqdm(merged_data_txt_list):
-    vig_move(datatxt_merged, vig_list)
+    vig_move(datatxt_merged, vig_string)
